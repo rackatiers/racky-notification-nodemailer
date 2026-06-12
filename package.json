@@ -1,7 +1,14 @@
 {
-	"name": "@perseidesjs/notification-nodemailer",
+	"name": "@rack-a-tiers/notification-nodemailer",
 	"version": "3.2.0",
 	"description": "A Medusa plugin for sending notifications via Nodemailer (SMTP)",
+	"publishConfig": {
+		"registry": "https://northamerica-northeast1-npm.pkg.dev/rack-a-tiers-dev/racky-store-packages/"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/rackatiers/racky-notification-nodemailer.git"
+	},
 	"author": "adevinwild",
 	"license": "MIT",
 	"main": "./.medusa/server/src/index.js",
@@ -29,9 +36,6 @@
 		"build": "medusa plugin:build",
 		"dev": "medusa plugin:develop",
 		"prepublishOnly": "medusa plugin:build",
-		"changeset": "changeset",
-		"version": "changeset version",
-		"release": "yarn build && changeset publish",
 		"lint": "biome lint --write",
 		"lint:check": "biome lint",
 		"format": "biome format --write",
@@ -42,7 +46,6 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.3.11",
-		"@changesets/cli": "^2.29.5",
 		"@medusajs/cli": "2.14.1",
 		"@medusajs/framework": "2.14.1",
 		"@medusajs/medusa": "2.14.1",
