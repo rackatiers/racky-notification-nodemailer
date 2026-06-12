@@ -1,8 +1,22 @@
-# @perseidesjs/notification-nodemailer
+# @rack-a-tiers/notification-nodemailer
 
-## 3.2.0
+> Internal Rack-a-Tiers fork of [`@perseidesjs/notification-nodemailer`](https://github.com/perseidesjs/notification-nodemailer).
+> Versions below `3.2.0` are inherited from upstream; entries from `3.2.0` onward track this fork,
+> based on upstream `@perseidesjs/notification-nodemailer@3.2.0`.
 
-### Minor Changes
+## 3.2.0 (fork base)
+
+### Fork changes
+
+- Rebrand package to `@rack-a-tiers/notification-nodemailer`; publish to the private GCP Artifact
+  Registry repo `racky-store-packages` (via `publishConfig.registry`) instead of public npm.
+- Disable the upstream changesets auto-publish workflow; publish manually with `npm publish`.
+
+---
+
+## Upstream history (`@perseidesjs/notification-nodemailer`)
+
+### 3.2.0 — Minor Changes
 
 - 88228a9: Add replyTo, cc, and bcc support via provider_data
 
