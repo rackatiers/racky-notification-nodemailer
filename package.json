@@ -36,9 +36,6 @@
 		"build": "medusa plugin:build",
 		"dev": "medusa plugin:develop",
 		"prepublishOnly": "medusa plugin:build",
-		"changeset": "changeset",
-		"version": "changeset version",
-		"release": "yarn build && changeset publish",
 		"lint": "biome lint --write",
 		"lint:check": "biome lint",
 		"format": "biome format --write",
@@ -49,7 +46,6 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.3.11",
-		"@changesets/cli": "^2.29.5",
 		"@medusajs/cli": "2.14.1",
 		"@medusajs/framework": "2.14.1",
 		"@medusajs/medusa": "2.14.1",
