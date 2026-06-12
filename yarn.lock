@@ -3921,33 +3921,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@perseidesjs/notification-nodemailer@workspace:.":
-  version: 0.0.0-use.local
-  resolution: "@perseidesjs/notification-nodemailer@workspace:."
-  dependencies:
-    "@biomejs/biome": "npm:2.3.11"
-    "@changesets/cli": "npm:^2.29.5"
-    "@medusajs/cli": "npm:2.14.1"
-    "@medusajs/framework": "npm:2.14.1"
-    "@medusajs/medusa": "npm:2.14.1"
-    "@swc/core": "npm:1.5.7"
-    "@types/node": "npm:^20.0.0"
-    "@types/nodemailer": "npm:^6.4.17"
-    "@types/qrcode": "npm:^1.5.6"
-    nodemailer: "npm:^8.0.5"
-    qrcode: "npm:^1.5.4"
-    ts-node: "npm:^10.9.2"
-    typescript: "npm:^5.6.2"
-    vitest: "npm:^4.0.16"
-    yalc: "npm:^1.0.0-pre.53"
-  peerDependencies:
-    "@medusajs/cli": ">=2.13.0"
-    "@medusajs/framework": ">=2.13.0"
-    "@medusajs/medusa": ">=2.13.0"
-    nodemailer: ^8.0.5
-  languageName: unknown
-  linkType: soft
-
 "@protobufjs/aspromise@npm:^1.1.1, @protobufjs/aspromise@npm:^1.1.2":
   version: 1.1.2
   resolution: "@protobufjs/aspromise@npm:1.1.2"
@@ -4020,6 +3993,33 @@ __metadata:
   checksum: 10c0/641fc145f00626405e8984b6e90b9edcbcc072ffc82d0647ca3176e09c730b2d022f988e65f011a7a17e2e4d77cde7733643aa10d8ac2bfa30f134dbcad553fd
   languageName: node
   linkType: hard
+
+"@rack-a-tiers/notification-nodemailer@workspace:.":
+  version: 0.0.0-use.local
+  resolution: "@rack-a-tiers/notification-nodemailer@workspace:."
+  dependencies:
+    "@biomejs/biome": "npm:2.3.11"
+    "@changesets/cli": "npm:^2.29.5"
+    "@medusajs/cli": "npm:2.14.1"
+    "@medusajs/framework": "npm:2.14.1"
+    "@medusajs/medusa": "npm:2.14.1"
+    "@swc/core": "npm:1.5.7"
+    "@types/node": "npm:^20.0.0"
+    "@types/nodemailer": "npm:^6.4.17"
+    "@types/qrcode": "npm:^1.5.6"
+    nodemailer: "npm:^8.0.5"
+    qrcode: "npm:^1.5.4"
+    ts-node: "npm:^10.9.2"
+    typescript: "npm:^5.6.2"
+    vitest: "npm:^4.0.16"
+    yalc: "npm:^1.0.0-pre.53"
+  peerDependencies:
+    "@medusajs/cli": ">=2.13.0"
+    "@medusajs/framework": ">=2.13.0"
+    "@medusajs/medusa": ">=2.13.0"
+    nodemailer: ^8.0.5
+  languageName: unknown
+  linkType: soft
 
 "@radix-ui/number@npm:1.1.0":
   version: 1.1.0
