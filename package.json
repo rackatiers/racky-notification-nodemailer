@@ -1,6 +1,6 @@
 {
 	"name": "@rack-a-tiers/notification-nodemailer",
-	"version": "3.2.2",
+	"version": "3.2.3",
 	"description": "A Medusa plugin for sending notifications via Nodemailer (SMTP)",
 	"publishConfig": {
 		"registry": "https://us-central1-npm.pkg.dev/racky-store/racky-store-packages/"
