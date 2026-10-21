@@ -178,3 +178,47 @@ describe("Nodemailer Integration - provider_data options", () => {
 		console.log("provider_data email sent, messageId:", result.id)
 	})
 })
+
+describe("Nodemailer Integration - text part, display name, default replyTo", () => {
+	let service: NodemailerNotificationProviderService
+
+	beforeAll(() => {
+		service = new NodemailerNotificationProviderService(null, {
+			from: "Test Store <test@example.com>",
+			replyTo: "sales@example.com",
+			host: "localhost",
+			port: 1025,
+			secure: false,
+		})
+	})
+
+	it("sends html + text as multipart/alternative with a default Reply-To", async () => {
+		const result = await service.send({
+			to: "customer@example.com",
+			channel: "email",
+			template: "order-confirmation",
+			content: {
+				subject: "Order Confirmed (multipart)",
+				html: "<p>Your order has been <strong>confirmed</strong>.</p>",
+				text: "Your order has been confirmed.",
+			},
+		})
+
+		expect(result.id).toBeDefined()
+		console.log("multipart email sent, messageId:", result.id)
+	})
+
+	it("sends a text-only notification as text/plain", async () => {
+		const result = await service.send({
+			to: "customer@example.com",
+			channel: "email",
+			template: "plain",
+			content: {
+				subject: "Plain text only",
+				text: "Line 1\nLine 2",
+			},
+		})
+
+		expect(result.id).toBeDefined()
+	})
+})

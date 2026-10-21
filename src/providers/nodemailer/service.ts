@@ -97,8 +97,72 @@ export function extractProviderData(
 
 export type PluginOptions = SMTPConnection.Options &
 	SMTPTransport.MailOptions & {
+		/** Default sender; accepts a bare address or `"Name <address>"`. */
 		from: string
+		/** Default Reply-To for every message; `provider_data.replyTo` overrides per send. */
+		replyTo?: string
 	}
+
+function buildAttachments(
+	attachments: ProviderSendNotificationDTO["attachments"],
+): Mail.Attachment[] {
+	if (!isDefined(attachments) || !Array.isArray(attachments)) {
+		return []
+	}
+	return attachments.map((attachment) => {
+		const processedContent = processAttachmentContent(attachment.content)
+		const isBase64Content =
+			typeof processedContent === "string" && isBase64String(processedContent)
+
+		return {
+			content: processedContent,
+			filename: attachment.filename,
+			contentType: attachment.content_type,
+			contentDisposition:
+				attachment.disposition === "inline" ||
+				attachment.disposition === "attachment"
+					? attachment.disposition
+					: undefined,
+			cid: attachment.id,
+			// Tell nodemailer the content is base64-encoded so it decodes first
+			encoding: isBase64Content ? "base64" : undefined,
+		}
+	})
+}
+
+/**
+ * Shapes a Medusa notification into nodemailer message options.
+ * `html` and `text` are independent parts: both present → multipart/alternative,
+ * one present → sent with its own content type.
+ */
+export function buildMailOptions(
+	notification: ProviderSendNotificationDTO,
+	options: Pick<PluginOptions, "from" | "replyTo">,
+): Mail.Options {
+	const { to, content, provider_data } = notification
+
+	const mailOptions: Mail.Options = {
+		from: notification.from ?? options.from,
+		to,
+		subject: content?.subject,
+		...(isDefined(options.replyTo) ? { replyTo: options.replyTo } : {}),
+		...extractProviderData(provider_data),
+	}
+
+	if (isDefined(content?.html)) {
+		mailOptions.html = content.html
+	}
+	if (isDefined(content?.text)) {
+		mailOptions.text = content.text
+	}
+
+	const attachments = buildAttachments(notification.attachments)
+	if (attachments.length > 0) {
+		mailOptions.attachments = attachments
+	}
+
+	return mailOptions
+}
 
 export class NodemailerNotificationProviderService extends AbstractNotificationProviderService {
 	static identifier = "nodemailer"
@@ -131,8 +195,6 @@ export class NodemailerNotificationProviderService extends AbstractNotificationP
 	async send(
 		notification: ProviderSendNotificationDTO,
 	): Promise<ProviderSendNotificationResultsDTO> {
-		const { to, content, provider_data } = notification
-
 		if (!isDefined(this.options_.from) && !isDefined(notification.from)) {
 			throw new MedusaError(
 				MedusaError.Types.INVALID_DATA,
@@ -140,55 +202,9 @@ export class NodemailerNotificationProviderService extends AbstractNotificationP
 			)
 		}
 
-		let html: string | undefined
-		if (isDefined(content?.html) || isDefined(content?.text)) {
-			html = content?.html ?? content?.text
-		}
-
-		let attachments: Mail.Attachment[] = []
-		if (
-			isDefined(notification.attachments) &&
-			Array.isArray(notification.attachments) &&
-			notification.attachments.length > 0
-		) {
-			attachments = notification.attachments.map((attachment) => {
-				const processedContent = processAttachmentContent(attachment.content)
-				const isBase64Content =
-					typeof processedContent === "string" &&
-					isBase64String(processedContent)
-
-				return {
-					content: processedContent,
-					filename: attachment.filename,
-					contentType: attachment.content_type,
-					contentDisposition:
-						attachment.disposition === "inline" ||
-						attachment.disposition === "attachment"
-							? attachment.disposition
-							: undefined,
-					cid: attachment.id,
-					// Tell nodemailer the content is base64-encoded so it decodes first
-					encoding: isBase64Content ? "base64" : undefined,
-				}
-			})
-		}
-
-		const mailOptions: Mail.Options = {
-			from: notification.from ?? this.options_.from,
-			to,
-			subject: content?.subject,
-			...extractProviderData(provider_data),
-		}
-
-		if (isDefined(html)) {
-			mailOptions.html = html
-		}
-
-		if (attachments.length > 0) {
-			mailOptions.attachments = attachments
-		}
-
-		const info = await this.transporter.sendMail(mailOptions)
+		const info = await this.transporter.sendMail(
+			buildMailOptions(notification, this.options_),
+		)
 
 		return {
 			id: info.messageId,
