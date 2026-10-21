@@ -4,6 +4,19 @@
 > Versions below `3.2.0` are inherited from upstream; entries from `3.2.0` onward track this fork,
 > based on upstream `@perseidesjs/notification-nodemailer@3.2.0`.
 
+## 3.3.0
+
+### Minor Changes
+
+- Send `content.text` as the plain-text part. `html` and `text` are now independent: both present
+  → `multipart/alternative`; `text` alone is sent as `text/plain` (previously it was sent as HTML,
+  which collapsed its line breaks).
+- `replyTo` plugin option: default `Reply-To` for every message; `provider_data.replyTo` still
+  overrides per send.
+- Extract the message shaping into an exported, unit-tested `buildMailOptions()`. `send()` is now
+  the `from` guard plus `sendMail`.
+- Document that `from` accepts the display-name form (`"Name <address>"`); no code change needed.
+
 ## 3.2.0 (fork base)
 
 ### Fork changes

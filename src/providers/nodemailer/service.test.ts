@@ -1,6 +1,8 @@
+import type { ProviderSendNotificationDTO } from "@medusajs/framework/types"
 import { describe, expect, it } from "vitest"
 import {
 	binaryStringToBuffer,
+	buildMailOptions,
 	extractProviderData,
 	isBase64String,
 	isBinaryString,
@@ -205,5 +207,134 @@ describe("isBase64String", () => {
 		// Some encoders omit padding, which is valid
 		expect(isBase64String("SGVSB")).toBe(true)
 		expect(isBase64String("SGVsbG8")).toBe(true)
+	})
+})
+
+describe("buildMailOptions", () => {
+	const options = { from: "noreply@store.com" }
+	const base: ProviderSendNotificationDTO = {
+		to: "customer@example.com",
+		channel: "email",
+		template: "order-confirmation",
+		content: { subject: "Order Confirmed" },
+	}
+
+	it("sends html and text as independent parts", () => {
+		const mail = buildMailOptions(
+			{ ...base, content: { subject: "S", html: "<p>Hi</p>", text: "Hi" } },
+			options,
+		)
+		expect(mail.html).toBe("<p>Hi</p>")
+		expect(mail.text).toBe("Hi")
+	})
+
+	it("sends a text-only notification as text, not html", () => {
+		const mail = buildMailOptions(
+			{ ...base, content: { subject: "S", text: "Line 1\nLine 2" } },
+			options,
+		)
+		expect(mail.text).toBe("Line 1\nLine 2")
+		expect(mail).not.toHaveProperty("html")
+	})
+
+	it("sends an html-only notification without a text part", () => {
+		const mail = buildMailOptions(
+			{ ...base, content: { subject: "S", html: "<p>Hi</p>" } },
+			options,
+		)
+		expect(mail.html).toBe("<p>Hi</p>")
+		expect(mail).not.toHaveProperty("text")
+	})
+
+	it("sets no body parts when content has neither", () => {
+		const mail = buildMailOptions(base, options)
+		expect(mail).not.toHaveProperty("html")
+		expect(mail).not.toHaveProperty("text")
+		expect(mail.subject).toBe("Order Confirmed")
+		expect(mail.to).toBe("customer@example.com")
+	})
+
+	it("uses the options from unless the notification carries its own", () => {
+		expect(buildMailOptions(base, options).from).toBe("noreply@store.com")
+		expect(
+			buildMailOptions({ ...base, from: "orders@store.com" }, options).from,
+		).toBe("orders@store.com")
+	})
+
+	it("passes a display-name from through untouched", () => {
+		const mail = buildMailOptions(base, {
+			from: "Rack-A-Tiers <tech@rack-a-tiers.com>",
+		})
+		expect(mail.from).toBe("Rack-A-Tiers <tech@rack-a-tiers.com>")
+	})
+
+	it("defaults replyTo from options and lets provider_data override it", () => {
+		const withDefault = buildMailOptions(base, {
+			...options,
+			replyTo: "sales@store.com",
+		})
+		expect(withDefault.replyTo).toBe("sales@store.com")
+
+		const overridden = buildMailOptions(
+			{ ...base, provider_data: { replyTo: "support@store.com" } },
+			{ ...options, replyTo: "sales@store.com" },
+		)
+		expect(overridden.replyTo).toBe("support@store.com")
+
+		expect(buildMailOptions(base, options)).not.toHaveProperty("replyTo")
+	})
+
+	it("keeps cc and bcc from provider_data", () => {
+		const mail = buildMailOptions(
+			{ ...base, provider_data: { cc: "cc@x.com", bcc: "bcc@x.com" } },
+			options,
+		)
+		expect(mail.cc).toBe("cc@x.com")
+		expect(mail.bcc).toBe("bcc@x.com")
+	})
+
+	it("maps attachments and flags base64 content", () => {
+		const mail = buildMailOptions(
+			{
+				...base,
+				attachments: [
+					{
+						id: "qr",
+						filename: "qr.png",
+						content: "iVBORw0KGgoAAAANSUhEUgAAAAEAAAAB",
+						content_type: "image/png",
+						disposition: "inline",
+					},
+					{
+						id: "doc",
+						filename: "doc.txt",
+						content: Buffer.from("hello"),
+						content_type: "text/plain",
+						disposition: "attachment",
+					},
+				],
+			},
+			options,
+		)
+		expect(mail.attachments).toHaveLength(2)
+		expect(mail.attachments?.[0]).toMatchObject({
+			cid: "qr",
+			filename: "qr.png",
+			contentType: "image/png",
+			contentDisposition: "inline",
+			encoding: "base64",
+		})
+		expect(mail.attachments?.[1]).toMatchObject({
+			cid: "doc",
+			contentDisposition: "attachment",
+			encoding: undefined,
+		})
+		expect(Buffer.isBuffer(mail.attachments?.[1]?.content)).toBe(true)
+	})
+
+	it("omits the attachments key when there are none", () => {
+		expect(
+			buildMailOptions({ ...base, attachments: [] }, options),
+		).not.toHaveProperty("attachments")
 	})
 })

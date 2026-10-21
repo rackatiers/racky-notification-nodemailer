@@ -40,7 +40,8 @@ Register the provider for the `email` channel in `medusa-config.ts`:
         id: "nodemailer",
         options: {
           channels: ["email"],
-          from: process.env.NOTIFICATION_PROVIDER_FROM,
+          from: process.env.NOTIFICATION_PROVIDER_FROM,       // "Rack-A-Tiers <tech@rack-a-tiers.com>" or a bare address
+          replyTo: process.env.NOTIFICATION_PROVIDER_REPLY_TO, // optional default Reply-To
           host: process.env.SMTP_HOST,
           port: Number(process.env.SMTP_PORT),
           secure: false, // 587 uses STARTTLS
@@ -52,7 +53,7 @@ Register the provider for the `email` channel in `medusa-config.ts`:
 }
 ```
 
-Then send email anywhere in the app:
+The provider renders no templates: it mails whatever is in `content`. Send email anywhere in the app:
 
 ```ts
 const notificationService = container.resolve(Modules.NOTIFICATION);
@@ -60,15 +61,26 @@ const notificationService = container.resolve(Modules.NOTIFICATION);
 await notificationService.createNotifications({
   to: "customer@example.com",
   channel: "email",
-  template: "back-in-stock",
-  data: { /* template payload */ },
+  template: "back-in-stock",            // record-keeping only
+  content: { subject, html, text },     // html + text → multipart/alternative; either alone is sent as-is
+  data: { /* stored with the notification */ },
+  provider_data: { replyTo, cc, bcc },  // optional per-send overrides
 });
 ```
+
+### Options
+
+| Option | Required | Meaning |
+|---|---|---|
+| `from` | yes | Default sender. A bare address or an RFC 5322 display-name form, `"Rack-A-Tiers <tech@rack-a-tiers.com>"`. A notification's own `from` wins. |
+| `replyTo` | no | Default `Reply-To` header for every message. `provider_data.replyTo` overrides it per send. |
+| `host`, `port`, `secure`, `auth`, … | `host`/`port` | Passed straight to `nodemailer.createTransport` (SMTP connection options). |
 
 ### Environment variables
 
 ```env
-NOTIFICATION_PROVIDER_FROM=
+NOTIFICATION_PROVIDER_FROM=Rack-A-Tiers <noreply@example.com>
+NOTIFICATION_PROVIDER_REPLY_TO=
 SMTP_HOST=
 SMTP_PORT=
 SMTP_USER=
